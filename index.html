@@ -168,7 +168,7 @@
     let correctAnswer;
     let score = 0;
     let timer;
-    let timeLeft = 10;
+    let timeLeft = 20;
     let paused = false;
     let started = false;
 
@@ -258,7 +258,7 @@
 
     function resetTimer() {
         clearInterval(timer);
-        timeLeft = 10;
+        timeLeft = timeLeft;
         timerElement.textContent = `Zeit: ${timeLeft}s`;
         timer = setInterval(() => {
             timeLeft--;
