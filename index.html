@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kopfrechnen – Finale Version</title>
+<style>
+    body {
+        font-family: 'Comic Sans MS', cursive, sans-serif;
+        background-color: #f9e4b7; /* leicht goldener Hintergrund */
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        margin: 0;
+    }
+    .container {
+        position: relative;
+        background: #fff8dc;
+        padding: 30px;
+        border-radius: 20px;
+        box-shadow: 0 0 20px rgba(0,0,0,0.2);
+        text-align: center;
+        width: 600px;
+        height: 800px; /* feste Höhe */
+        overflow: hidden;
+    }
+    .container::before {
+        content: '';
+        background: url('Designer (15).png') no-repeat center;
+        background-size: 350px; /* Logo größer */
+        opacity: 0.15;
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 0;
+    }
+    .content {
+        position: relative;
+        z-index: 1;
+    }
+    h1 {
+        color: #ff6f61;
+        font-size: 2em;
+        margin-bottom: 20px;
+    }
+    #task {
+        font-size: 1.8em;
+        margin-bottom: 15px;
+        color: #333;
+    }
+    #timer {
+        font-size: 1.5em;
+        color: #ff3b2e;
+        margin-bottom: 15px;
+        font-weight: bold;
+    }
+    #answerBox {
+        width: 100%;
+        height: 60px;
+        border: 2px dashed #ff6f61;
+        border-radius: 10px;
+        margin-bottom: 15px;
+        font-size: 1.5em;
+        line-height: 60px;
+        color: #333;
+        background: #fff;
+    }
+    .numbers {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        margin-bottom: 15px;
+    }
+    .number {
+        width: 60px;
+        height: 60px;
+        background: #ff6f61;
+        color: white;
+        font-size: 1.5em;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin: 5px;
+        border-radius: 10px;
+        cursor: pointer;
+        transition: transform 0.2s;
+    }
+    .number:active {
+        transform: scale(1.2);
+    }
+    #pauseBtn, #startBtn {
+        font-size: 1.2em;
+        padding: 10px 15px;
+        margin: 10px;
+        background: #ff6f61;
+        color: white;
+        border: none;
+        border-radius: 10px;
+        cursor: pointer;
+    }
+    #pauseBtn:hover, #startBtn:hover {
+        background: #ff3b2e;
+    }
+    #result {
+        font-size: 1.4em;
+        margin-top: 15px;
+        font-weight: bold;
+        min-height: 40px; /* Platz reservieren */
+    }
+    .barometer {
+        margin-top: 20px;
+        height: 40px;
+        width: 100%;
+        background: #ddd;
+        border-radius: 20px;
+        overflow: hidden;
+        position: relative;
+    }
+    .bar {
+        height: 100%;
+        width: 50%;
+        background: #4caf50;
+        transition: width 0.3s ease;
+    }
+    .smiley {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        font-size: 1.5em;
+        left: 10px;
+    }
+</style>
+</head>
+<body>
+<div class="container">
+    <div class="content">
+        <h1>Kopfrechnen Spaß!</h1>
+        <button id="startBtn">Start</button>
+        <div id="task" style="display:none;"></div>
+        <div id="timer" style="display:none;">Zeit: 5s</div>
+        <div id="answerBox" style="display:none;">Tippe die Zahl</div>
+        <div class="numbers" id="numbers" style="display:none;"></div>
+        <button id="pauseBtn" style="display:none;">Pause</button>
+        <p id="result"></p>
+        <div class="barometer" style="display:none;">
+            <div class="bar" id="bar"></div>
+            <div class="smiley" id="smiley">??</div>
+        </div>
+        <p style="display:none;" id="scoreText">Punkte: <span id="score">0</span></p>
+    </div>
+</div>
+<script>
+    const startButton = document.getElementById('startBtn');
+    const taskElement = document.getElementById('task');
+    const timerElement = document.getElementById('timer');
+    const answerBox = document.getElementById('answerBox');
+    const numbersContainer = document.getElementById('numbers');
+    const pauseButton = document.getElementById('pauseBtn');
+    const resultElement = document.getElementById('result');
+    const scoreElement = document.getElementById('score');
+    const scoreText = document.getElementById('scoreText');
+    const barElement = document.getElementById('bar');
+    const smileyElement = document.getElementById('smiley');
+
+    let correctAnswer;
+    let score = 0;
+    let timer;
+    let timeLeft = 10;
+    let paused = false;
+    let started = false;
+
+    startButton.addEventListener('click', () => {
+        started = true;
+        startButton.style.display = 'none';
+        taskElement.style.display = 'block';
+        timerElement.style.display = 'block';
+        answerBox.style.display = 'block';
+        numbersContainer.style.display = 'flex';
+        pauseButton.style.display = 'inline-block';
+        document.querySelector('.barometer').style.display = 'block';
+        scoreText.style.display = 'block';
+        generateTask();
+    });
+
+    function generateTask() {
+        if (paused || !started) return;
+        const a = Math.floor(Math.random() * 20) + 1;
+        const b = Math.floor(Math.random() * 20) + 1;
+        const operator = Math.random() < 0.5 ? '+' : '-';
+        let x = a;
+        let y = b;
+		if(operator === '+'){
+				let over = a + b
+				if(over > 20){
+					operator = '-'
+				}
+			}
+            if (operator === '-' && a < b) {
+			
+                x = b;
+                y = a;
+            }
+        correctAnswer = operator === '+' ? x + y : x - y;
+        taskElement.textContent = `${x} ${operator} ${y} = ?`;
+        resultElement.textContent = '';
+        answerBox.textContent = 'Tippe die Zahl';
+        resetTimer();
+    }
+
+    function createNumbers() {
+        numbersContainer.innerHTML = '';
+        for (let i = 0; i <= 20; i++) {
+            const div = document.createElement('div');
+            div.className = 'number';
+            div.textContent = i;
+            div.addEventListener('click', () => {
+                if (paused || !started) return;
+                if (answerBox.textContent === 'Tippe die Zahl') {
+                    answerBox.textContent = i;
+                } else {
+                    answerBox.textContent += i;
+                }
+                checkAnswer();
+            });
+            numbersContainer.appendChild(div);
+        }
+    }
+
+    function checkAnswer() {
+        clearInterval(timer);
+        const userAnswer = parseInt(answerBox.textContent);
+        if (userAnswer === correctAnswer) {
+            resultElement.textContent = 'Super! Richtig!';
+            score++;
+        } else {
+            resultElement.textContent = `Oh nein! Richtige Antwort: ${correctAnswer}`;
+            score--;
+        }
+        scoreElement.textContent = score;
+        updateBarometer();
+        setTimeout(generateTask, 2000);
+    }
+
+    function updateBarometer() {
+        let percentage = ((score + 10) / 20) * 100;
+        barElement.style.width = percentage + '%';
+        if (score >= 0) {
+            barElement.style.background = '#4caf50';
+            smileyElement.textContent = '??';
+        } else {
+            barElement.style.background = '#f44336';
+            smileyElement.textContent = '??';
+        }
+    }
+
+    function resetTimer() {
+        clearInterval(timer);
+        timeLeft = 10;
+        timerElement.textContent = `Zeit: ${timeLeft}s`;
+        timer = setInterval(() => {
+            timeLeft--;
+            timerElement.textContent = `Zeit: ${timeLeft}s`;
+            if (timeLeft <= 0) {
+                clearInterval(timer);
+                handleTimeout();
+            }
+        }, 1000);
+    }
+
+    function handleTimeout() {
+        resultElement.textContent = `Zeit abgelaufen! Richtige Antwort: ${correctAnswer}`;
+        score--;
+        scoreElement.textContent = score;
+        updateBarometer();
+        setTimeout(generateTask, 4000);
+    }
+
+    pauseButton.addEventListener('click', () => {
+        paused = !paused;
+        if (paused) {
+            clearInterval(timer);
+            pauseButton.textContent = 'Fortsetzen';
+            resultElement.textContent = 'Spiel pausiert';
+        } else {
+            pauseButton.textContent = 'Pause';
+            generateTask();
+        }
+    });
+
+    createNumbers();
+    updateBarometer();
+</script>
+</body>
+</html>
